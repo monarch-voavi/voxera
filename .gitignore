@@ -30,11 +30,31 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env — секрети не комітити; шаблон без ключів лишаємо в репозиторії
 .env*
+!.env.example
 
-# vercel
+# локальні / тимчасові секрети (на випадок інших імен файлів)
+*.key
+*.p12
+*.pfx
+credentials.json
+serviceAccount*.json
+*-firebase-adminsdk-*.json
+
+# vercel (токени лінкування CLI — лише локально)
 .vercel
+
+# локальні IDE / ОС
+.idea/
+*.swp
+*~
+Thumbs.db
+Desktop.ini
+
+# аналітика / кеш інструментів
+.turbo
+.eslintcache
 
 # typescript
 *.tsbuildinfo

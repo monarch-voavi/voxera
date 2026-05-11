@@ -1,4 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Voxera.live
+
+Futuristic AI-powered global news platform built with Next.js App Router, TypeScript, Tailwind CSS, and Framer Motion.
+
+### Stack
+
+- Next.js 16 App Router
+- TypeScript
+- Tailwind CSS v4
+- Framer Motion
+- Shadcn-style component primitives
+
+### Features
+
+- Live breaking ticker and hero coverage
+- AI summaries with key points and article timelines
+- Search + category filtering + load-more feed exploration
+- Dynamic article routes with OpenGraph metadata
+- JSON-LD structured data, robots, sitemap, RSS
+- API endpoints for feed and search
+- Dark/light mode
+
+### API provider setup
+
+Create `.env.local`:
+
+```bash
+NEWS_API_KEY=...
+GNEWS_API_KEY=...
+MEDIASTACK_API_KEY=...
+```
+
+If keys are not configured, Voxera falls back to curated mock wire data.
+
+### Run
+
+```bash
+npm install
+npm run dev
+```
 
 ## Getting Started
 
