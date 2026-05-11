@@ -11,6 +11,8 @@ type ExternalArticle = {
   urlToImage?: string;
   publishedAt?: string;
   content?: string;
+  /** Пряме посилання на матеріал (NewsAPI, RSS тощо). */
+  url?: string;
 };
 
 /** Кожен провайдер: env-змінна + URL без секрету + ім’я query-параметра для ключа (у кожного API своє). */
@@ -48,6 +50,42 @@ function rankArticle(article: NewsArticle) {
   return article.views * 0.01 + freshnessScore + breakingBoost + article.tags.length * 2;
 }
 
+const MAX_BODY_CHARS = 120_000;
+const EXCERPT_CHARS = 520;
+
+function pickLongest(...parts: (string | undefined)[]) {
+  return parts.filter(Boolean).sort((a, b) => (b?.length ?? 0) - (a?.length ?? 0))[0]?.trim() ?? "";
+}
+
+/** Повний текст для сторінки статті + короткий лід для карток. */
+function normalizeBody(content?: string, description?: string, title?: string) {
+  const c = (content ?? "").trim();
+  const d = (description ?? "").trim();
+  let full = pickLongest(c, d, title ?? "");
+  if (c && d && c !== d) {
+    const shorter = c.length <= d.length ? c : d;
+    const longer = c.length > d.length ? c : d;
+    if (!longer.includes(shorter.slice(0, Math.min(100, shorter.length)))) {
+      full = `${shorter}\n\n${longer}`;
+    } else {
+      full = longer;
+    }
+  }
+  full = full.slice(0, MAX_BODY_CHARS);
+  const excerpt =
+    full.length > EXCERPT_CHARS ? `${full.slice(0, EXCERPT_CHARS).trimEnd()}…` : full;
+  return { full, excerpt };
+}
+
+function bulletsFromDescription(text: string, max = 4): string[] {
+  const cleaned = text.replace(/\s+/g, " ").trim();
+  if (!cleaned) return [];
+  const sentences = cleaned.split(/(?<=[.!?])\s+/).map((s) => s.trim());
+  const out = sentences.filter((s) => s.length > 24).slice(0, max);
+  if (out.length) return out;
+  return [cleaned.slice(0, 220) + (cleaned.length > 220 ? "…" : "")];
+}
+
 function dedupeByTitle<T extends { title: string }>(items: T[]) {
   const seen = new Set<string>();
   return items.filter((item) => {
@@ -60,19 +98,20 @@ function dedupeByTitle<T extends { title: string }>(items: T[]) {
 
 function mapExternalToNews(article: ExternalArticle, idx: number): NewsArticle | null {
   if (!article.title?.trim()) return null;
-  const description = (article.description ?? article.content ?? article.title).trim();
-  if (!description) return null;
+  const { full, excerpt } = normalizeBody(article.content, article.description, article.title);
+  if (!full) return null;
   const category = categories[idx % categories.length];
   const baseSlug = slugify(article.title);
+  const aiBlurbSource = full.slice(0, 3500);
   return {
     id: `ext-${idx}-${baseSlug.slice(0, 48)}`,
     slug: baseSlug || `item-${idx}`,
     title: article.title.trim(),
-    summary: description.slice(0, 400),
-    aiSummary: `In simple terms: ${description.slice(0, 280)}`,
-    aiKeyPoints: ["Auto-ingested from trusted source", "Summarized by Voxera AI", "Categorized by semantic model"],
+    summary: excerpt,
+    aiSummary: `In simple terms: ${aiBlurbSource.slice(0, 1200)}${aiBlurbSource.length > 1200 ? "…" : ""}`,
+    aiKeyPoints: bulletsFromDescription(full.slice(0, 6000)),
     timeline: [],
-    content: (article.content ?? description).slice(0, 8000),
+    content: full,
     source: article.source?.name ?? "Global Wire",
     category,
     image:
@@ -81,6 +120,7 @@ function mapExternalToNews(article: ExternalArticle, idx: number): NewsArticle |
     publishedAt: article.publishedAt ?? new Date().toISOString(),
     views: 5000 + idx * 177,
     tags: ["wire", "global", category.toLowerCase()],
+    canonicalUrl: article.url?.trim() || undefined,
   };
 }
 
@@ -98,8 +138,15 @@ async function fetchProviderArticles() {
       });
       if (!response.ok) return [] as ExternalArticle[];
       const data = await response.json();
-      const articles = data.articles ?? data.data ?? [];
-      return Array.isArray(articles) ? (articles as ExternalArticle[]) : [];
+      const rawList = data.articles ?? data.data ?? [];
+      if (!Array.isArray(rawList)) return [] as ExternalArticle[];
+      return rawList.map((row: Record<string, unknown>) => {
+        const obj = row as ExternalArticle & { url?: string };
+        return {
+          ...obj,
+          url: typeof obj.url === "string" ? obj.url : undefined,
+        };
+      });
     }),
   );
 
@@ -145,6 +192,13 @@ function extractRssItemBlocks(xml: string) {
   return blocks;
 }
 
+function extractRssLink(block: string): string | undefined {
+  const href = block.match(/<link[^>]*\bhref=["']([^"'>\s]+)["']/i)?.[1]?.trim();
+  if (href) return href;
+  const plain = block.match(/<link>([^<]+)<\/link>/i)?.[1]?.trim();
+  return plain || undefined;
+}
+
 function extractRssDate(block: string) {
   const raw =
     block.match(/<pubDate>([^<]+)<\/pubDate>/i)?.[1]?.trim() ??
@@ -155,21 +209,23 @@ function extractRssDate(block: string) {
   return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
 }
 
-/** Без зовнішніх зображень з RSS — менше проблем з `next/image` і доменами CDN. */
+/** Повний текст з RSS; зображення з стрічки не тягнемо — стабільніший `next/image`. */
 function rssBlockToArticle(block: string, sourceLabel: string): ExternalArticle | null {
   const title = xmlField(block, "title");
   if (!title) return null;
-  const description =
-    xmlField(block, "description") ||
+  const body =
     xmlField(block, "content:encoded") ||
+    xmlField(block, "description") ||
     xmlField(block, "summary") ||
     title;
+  const link = extractRssLink(block);
   return {
     title,
-    description: description.slice(0, 600),
+    description: body,
     source: { name: sourceLabel },
     publishedAt: extractRssDate(block),
-    content: description.slice(0, 4000),
+    content: body,
+    url: link,
   };
 }
 

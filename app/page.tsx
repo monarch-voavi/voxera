@@ -34,7 +34,6 @@ async function HomeContent({ feedPromise }: { feedPromise: ReturnType<typeof get
         <BreakingTicker headlines={breaking} />
         <section className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_320px]">
           <div className="space-y-5">
-            <h2 className="text-2xl font-semibold">Trending Global Stories</h2>
             <FeedExplorer feed={rest} />
           </div>
           <Sidebar mostViewed={mostViewed} trends={trends} />

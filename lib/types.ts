@@ -27,6 +27,7 @@ export type NewsArticle = {
   aiSummary: string;
   aiKeyPoints: string[];
   timeline: TimelinePoint[];
+  /** Повний текст матеріалу з джерела (без обрізання під «AI»). */
   content: string;
   source: string;
   category: NewsCategory;
@@ -35,4 +36,6 @@ export type NewsArticle = {
   views: number;
   isBreaking?: boolean;
   tags: string[];
+  /** Посилання на оригінальну публікацію (RSS / NewsAPI тощо). */
+  canonicalUrl?: string;
 };

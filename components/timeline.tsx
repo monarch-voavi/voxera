@@ -1,11 +1,11 @@
 import { TimelinePoint } from "@/lib/types";
 import { timeAgo } from "@/lib/utils";
 
-export function Timeline({ points }: { points: TimelinePoint[] }) {
+export function Timeline({ points, title = "Timeline" }: { points: TimelinePoint[]; title?: string }) {
   if (!points.length) return null;
   return (
     <section className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-      <h2 className="mb-4 text-xl font-semibold text-white">Timeline</h2>
+      <h2 className="mb-4 text-xl font-semibold text-white">{title}</h2>
       <ol className="space-y-4 border-l border-cyan-300/20 pl-4">
         {points.map((item) => (
           <li key={`${item.title}-${item.timestamp}`} className="relative">
