@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { ArticleView } from "@/components/article-view";
 import { Navbar } from "@/components/navbar";
 import { ReadingProgress } from "@/components/reading-progress";
-import { getNewsFeed } from "@/lib/news-service";
+import { getNewsFeed, getRelatedStories } from "@/lib/news-service";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -25,7 +25,7 @@ export default async function ArticlePage({ params }: Props) {
   const stories = await getNewsFeed();
   const story = stories.find((item) => item.slug === slug);
   if (!story) notFound();
-  const related = stories.filter((item) => item.slug !== slug).slice(0, 3);
+  const related = getRelatedStories(story, stories, 3);
 
   return (
     <div className="min-h-screen bg-[#06070a] text-white">
@@ -35,3 +35,4 @@ export default async function ArticlePage({ params }: Props) {
     </div>
   );
 }
+

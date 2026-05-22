@@ -1,4 +1,4 @@
-export const categories = [
+﻿export const categories = [
   "World",
   "Politics",
   "Technology",
@@ -12,6 +12,8 @@ export const categories = [
 ] as const;
 
 export type NewsCategory = (typeof categories)[number];
+export type ArticleLanguage = "en" | "uk";
+export type ContentStatus = "full" | "excerpt";
 
 export type TimelinePoint = {
   title: string;
@@ -27,15 +29,17 @@ export type NewsArticle = {
   aiSummary: string;
   aiKeyPoints: string[];
   timeline: TimelinePoint[];
-  /** Повний текст матеріалу з джерела (без обрізання під «AI»). */
   content: string;
   source: string;
+  sourceUrl?: string;
+  attribution?: string;
+  language?: ArticleLanguage;
+  contentStatus?: ContentStatus;
   category: NewsCategory;
   image: string;
   publishedAt: string;
   views: number;
   isBreaking?: boolean;
   tags: string[];
-  /** Посилання на оригінальну публікацію (RSS / NewsAPI тощо). */
   canonicalUrl?: string;
 };

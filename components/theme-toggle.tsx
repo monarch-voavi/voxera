@@ -1,22 +1,26 @@
-"use client";
+﻿"use client";
 
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
+type Theme = "light" | "dark";
+
+function readSavedTheme(): Theme {
+  if (typeof window === "undefined") return "dark";
+  return window.localStorage.getItem("voxera-theme") === "light" ? "light" : "dark";
+}
+
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [theme, setTheme] = useState<Theme>(readSavedTheme);
 
   useEffect(() => {
-    const saved = (localStorage.getItem("voxera-theme") as "light" | "dark" | null) ?? "dark";
-    setTheme(saved);
-    document.documentElement.dataset.theme = saved;
-  }, []);
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
 
   const toggle = () => {
     const next = theme === "dark" ? "light" : "dark";
     setTheme(next);
-    localStorage.setItem("voxera-theme", next);
-    document.documentElement.dataset.theme = next;
+    window.localStorage.setItem("voxera-theme", next);
   };
 
   return (

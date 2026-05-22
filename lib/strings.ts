@@ -1,4 +1,4 @@
-export type Locale = "en" | "uk";
+﻿export type Locale = "en" | "uk";
 
 export const dictionary: Record<
   Locale,
@@ -33,7 +33,7 @@ export const dictionary: Record<
 > = {
   en: {
     navTrending: "Trending global stories",
-    searchPlaceholder: "Search stories, topics, tags…",
+    searchPlaceholder: "Search stories, topics, tags...",
     loadMore: "Load more stories",
     filterAll: "All",
     heroLive: "LIVE BREAKING",
@@ -60,8 +60,8 @@ export const dictionary: Record<
     langUk: "UK",
   },
   uk: {
-    navTrending: "Трендові світові історії",
-    searchPlaceholder: "Пошук статей, тем, тегів…",
+    navTrending: "Трендові світові новини",
+    searchPlaceholder: "Пошук статей, тем, тегів...",
     loadMore: "Більше матеріалів",
     filterAll: "Усі",
     heroLive: "НАЖИВО · ГОЛОВНЕ",
@@ -73,7 +73,7 @@ export const dictionary: Record<
     footerNewsletterBody: "Щоденний дайджест о 07:00 UTC.",
     sidebarAiTitle: "Інсайти ШІ",
     sidebarAiBody:
-      "Voxera AI відстежує прискорення в регуляціях, ланцюгах постачання напівпровідників та геополітичних сигналах.",
+      "Voxera AI відстежує прискорення в регуляції, ланцюгах постачання напівпровідників і геополітичних сигналах.",
     sidebarTags: "Трендові хештеги",
     sidebarMostViewed: "Найбільше переглядів",
     articleShare: "Поділитися",

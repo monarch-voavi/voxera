@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -31,11 +31,19 @@ export function ArticleView({ story, related }: { story: NewsArticle; related: N
         <h1 className="text-3xl font-bold leading-tight md:text-5xl">{story.title}</h1>
         <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-400">
           <span>{story.source}</span>
-          <span aria-hidden>•</span>
+          <span aria-hidden>·</span>
           <span>{timeAgo(story.publishedAt)}</span>
-          <span aria-hidden>•</span>
+          <span aria-hidden>·</span>
           <span>{readTime(story.content)}</span>
         </div>
+        {story.attribution ? <p className="text-xs text-zinc-500">{story.attribution}</p> : null}
+        {story.contentStatus === "excerpt" ? (
+          <p className="text-xs text-zinc-500">
+            {locale === "uk"
+              ? "Показано фрагмент, який віддало джерело/API. Повний текст відкривайте за посиланням на оригінал."
+              : "Showing the source/API-provided excerpt. Open the original link for the full story."}
+          </p>
+        ) : null}
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-white/10">
@@ -98,3 +106,5 @@ export function ArticleView({ story, related }: { story: NewsArticle; related: N
     </article>
   );
 }
+
+

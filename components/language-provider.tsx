@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
@@ -11,25 +11,24 @@ type Ctx = {
 };
 
 const LanguageContext = createContext<Ctx | null>(null);
-
 const STORAGE_KEY = "voxera-locale";
 
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("uk");
+function readSavedLocale(): Locale {
+  if (typeof window === "undefined") return "uk";
+  const saved = window.localStorage.getItem(STORAGE_KEY);
+  return saved === "en" || saved === "uk" ? saved : "uk";
+}
 
-  useEffect(() => {
-    const saved = (localStorage.getItem(STORAGE_KEY) as Locale | null) ?? "uk";
-    if (saved === "en" || saved === "uk") setLocaleState(saved);
-  }, []);
+export function LanguageProvider({ children }: { children: React.ReactNode }) {
+  const [locale, setLocaleState] = useState<Locale>(readSavedLocale);
 
   const setLocale = useCallback((next: Locale) => {
     setLocaleState(next);
-    localStorage.setItem(STORAGE_KEY, next);
-    document.documentElement.lang = next === "uk" ? "uk" : "en";
+    window.localStorage.setItem(STORAGE_KEY, next);
   }, []);
 
   useEffect(() => {
-    document.documentElement.lang = locale === "uk" ? "uk" : "en";
+    document.documentElement.lang = locale;
   }, [locale]);
 
   const t = useCallback(
