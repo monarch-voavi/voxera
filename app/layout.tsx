@@ -49,6 +49,22 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <LanguageProvider>{children}</LanguageProvider>
+        import { Analytics } from "@vercel/analytics/next"
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en">
+      <body>
+        {children}
+        <Analytics />  {/* ← сюди */}
+      </body>
+    </html>
+  )
+}
       </body>
     </html>
   );
